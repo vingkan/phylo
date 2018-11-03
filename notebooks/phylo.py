@@ -1,5 +1,6 @@
 import os
 import numpy as np
+import math
 import imageio
 from PIL import Image
 
@@ -12,10 +13,14 @@ LIGHTEST = 255
 TRANSPARENT = 0
 OPAQUE = 255
 NO_COLOR = 0
+BACKGROUND = (238, 255, 188, 255)
 
 image_path_stub = "/".join(os.getcwd().split("/")[0:-1])
 REGULAR_POKEMON_PATH = image_path_stub + "/images/regular/"
 SHINY_POKEMON_PATH = image_path_stub + "/images/shiny/"
+
+
+"""Converting Between Vectors and Images"""
 
 
 def quantize(val, alpha):
@@ -58,6 +63,8 @@ def unvectorize(vec):
     return im
 
 
+"""Loading Images"""
+
 def load_img(filename):
     im = imageio.imread(filename, pilmode=MODE)
     im = Image.fromarray(im)
@@ -95,3 +102,105 @@ def vectorize_pokemon(path):
 
     print("Done vectorizing")
     return np.asarray(pokemon)
+
+
+"""Computing Expected Vectors"""
+
+
+def col_counts(col):
+    buckets = np.zeros(Q + 1)
+    for x in col:
+        buckets[x] += 1
+    return buckets
+
+
+def col_freq(col):
+    buckets = col_counts(col)
+    freq = buckets / buckets.sum()
+    return freq
+
+
+def col_exp(col):
+    freq = col_freq(col)
+    expt = np.dot(freq, np.array(range(Q + 1))).sum()
+    return expt
+
+
+def draw_val(col):
+    expt = col_exp(col)
+    return math.floor(expt)
+
+
+def generate_expected(train_pop, n_sub, seed=None):
+    if seed:
+        np.random.seed(seed)
+    idxs = list(np.random.choice(range(len(train_pop)), n_sub))
+    subsample = np.array([train_pop[i] for i in idxs])
+    ev = np.array([draw_val(subsample[:, j]) for j in range(M**2)])
+    return ev
+
+
+def expect_from_subsample(subsample):
+    ev = np.array([draw_val(subsample[:, j]) for j in range(M**2)])
+    return ev
+
+
+def active_prop(xv):
+    max_active = M**2
+    active = sum(map(lambda x: 1 if x > 1 else 0, xv))
+    return active / max_active
+
+
+def in_im(x, y):
+    return x >= 0 and x < M and y >= 0 and y < M
+
+
+def neighbors4(x, y, r=1):
+    neigh = [(x - r, y), (x + r, y), (x, y - r), (x, y + r)]
+    neigh = list(filter(lambda t: in_im(*t), neigh))
+    return neigh
+
+
+def cell_transform(xv, do_transform):
+    mat = xv.reshape(M, M)
+    out = np.uint8(np.zeros(M**2).reshape(M, M))
+    for y, row in enumerate(mat):
+        for x, cell in enumerate(row):
+            out[y][x] = do_transform(cell, x, y, mat)
+    return out.reshape(M**2)
+
+
+def clean_fluff(xv, radius=4):
+    def do_transform(cell, x, y, mat):
+        neigh = neighbors4(x, y, radius)
+        n_vals = [mat[yn][xn] for xn, yn in neigh]
+        if max(n_vals) <= 1:
+            return 0
+        return cell
+    return cell_transform(xv, do_transform)
+
+
+def outline_body(xv, radius=4):
+    def do_transform(cell, x, y, mat):
+        neigh = neighbors4(x, y, radius)
+        n_vals = [mat[yn][xn] for xn, yn in neigh]
+        if max(n_vals) <= 1:
+            return 0
+        if max(n_vals) == 2 and cell <= 1 and sum(n_vals) < 6:
+            return Q
+        return cell
+    return cell_transform(xv, do_transform)
+
+
+def show_trans(im):
+    pixels = np.array(im).reshape(M * M, C)
+    new_pix = [BACKGROUND if p[-1] == TRANSPARENT else p for p in pixels]
+    new_pix = np.array(np.uint8(new_pix)).reshape(M, M, C)
+    return Image.fromarray(new_pix, mode=MODE)
+
+
+def showim(xv, scale=1, outline=False):
+    vec = xv
+    if outline:
+        vec = outline_body(xv)
+    return scale_img(show_trans(unvectorize(vec)), scale)

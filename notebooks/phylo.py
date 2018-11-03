@@ -17,6 +17,7 @@ image_path_stub = "/".join(os.getcwd().split("/")[0:-1])
 REGULAR_POKEMON_PATH = image_path_stub + "/images/regular/"
 SHINY_POKEMON_PATH = image_path_stub + "/images/shiny/"
 
+
 def quantize(val, alpha):
     if alpha == TRANSPARENT:
         return 0

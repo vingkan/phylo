@@ -1,3 +1,4 @@
+import os
 import numpy as np
 import imageio
 from PIL import Image
@@ -12,6 +13,9 @@ TRANSPARENT = 0
 OPAQUE = 255
 NO_COLOR = 0
 
+image_path_stub = "/".join(os.getcwd().split("/")[0:-1])
+REGULAR_POKEMON_PATH = image_path_stub + "/images/regular/"
+SHINY_POKEMON_PATH = image_path_stub + "/images/shiny/"
 
 def quantize(val, alpha):
     if alpha == TRANSPARENT:
@@ -59,6 +63,14 @@ def load_img(filename):
     return im
 
 
+def load_all_images(path):
+    paths = []
+    for (dirnames, dirpath, filenames) in os.walk(path):
+        paths.extend(filenames)
+
+    return [load_img(path + filename) for filename in paths]
+
+
 def scale_img(img, k):
     return img.resize((k * img.size[0], k * img.size[0]))
 
@@ -67,3 +79,18 @@ def generate_random(seed=None):
     if seed:
         np.random.seed(seed)
     return np.random.randint(Q + 1, size=M**2)
+
+
+def vectorize_pokemon(path):
+    print("Vectorizing pokemon from {}".format(path))
+    images = load_all_images(path)
+    pokemon = []
+
+    for i in range(len(images)):
+        if i % 100 == 0:
+            print("Vector iteration {}".format(i))
+
+        pokemon.append(vectorize(images[i]))
+
+    print("Done vectorizing")
+    return np.asarray(pokemon)

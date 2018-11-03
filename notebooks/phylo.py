@@ -61,3 +61,9 @@ def load_img(filename):
 
 def scale_img(img, k):
     return img.resize((k * img.size[0], k * img.size[0]))
+
+
+def generate_random(seed=None):
+    if seed:
+        np.random.seed(seed)
+    return np.random.randint(Q + 1, size=M**2)

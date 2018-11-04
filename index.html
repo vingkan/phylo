@@ -4,10 +4,10 @@
     <title>Phylo</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/5.7.0/d3.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/plottable.js/3.8.3/plottable.js"></script>
-    <link rel="stylesheet" type="text/css" href="bulma.min.css">
-    <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/plottable.js/3.8.3/plottable.css">
+    <script src="static/d3.js"></script>
+    <script src="static/plottable.js"></script>
+    <link rel="stylesheet" type="text/css" href="static/bulma.min.css">
+    <link rel="stylesheet" type="text/css" href="static/plottable.css">
     <style type="text/css">
 
         html {
@@ -93,9 +93,9 @@
                 <p>Pokemon sprites are creative and unique, but even they can be converted into numbers.</p>
                 <div class="level-faux">
                     <div><p>During vectorization, each sprite is converted into a <span class="tag">96 x 96 = 9216</span> dimension array.</p></div>
-                    <figure class="image is-256x256"><img src="../../images/output/venus-color.png"></figure>
+                    <figure class="image is-256x256"><img src="./images/output/venus-color.png"></figure>
                     <div><p>Each four-channel pixel is reduced to a single color quantum between <span class="tag">0</span> and <span class="tag">4</span>.</p></div>
-                    <figure class="image is-256x256"><img src="../../images/output/venus-imshow.png"></figure>
+                    <figure class="image is-256x256"><img src="./images/output/venus-imshow.png"></figure>
                 </div>
                 <h2 class="title is-2">Principle Components Analysis (PCA)</h2>
                 <p>PCA reduces the number of dimensions in a dataset to aid visualization and model-fitting.</p>
@@ -106,12 +106,13 @@
                 <h2 class="title is-2">K-Means Clustering</h2>
                 <p>This clustering method forms <span class="tag">10</span> groups of similar vectors (creatures).</p>
                 <h3 class="subtitle">Cluster Centers</h3>
-                <figure class="image"><img src="../../images/output/cluster-centers.png"></figure>
+                <figure class="image"><img src="./images/output/cluster-centers.png"></figure>
                 <h3 class="subtitle">Cluster Members</h3>
-                <figure class="image"><img src="../../images/output/cluster-examples.png"></figure>
+                <figure class="image"><img src="./images/output/cluster-examples.png"></figure>
             </div>
             <div class="content">
                 <h2 class="title is-2">Draw to Search</h2>
+                <p>Computes the Hamming Distance between your sketch and all creature vectors to find the closest match.</p>
             </div>
             <div class="columns">
                 <div class="column is-one-fourth">
@@ -174,7 +175,8 @@
             ctx.fill();
         }
         
-        const SERVER_URL = "http://localhost:4000";
+        const SERVER_URL = ".";
+        const API_URL = "http://localhost:5000"
         const COLORS = ["#e6194b", "#3cb44b", "#ffe119", "#4363d8", "#f58231", "#911eb4", "#46f0f0", "#f032e6", "#bcf60c", "#fabebe", "#008080", "#e6beff", "#9a6324", "#fffac8", "#800000", "#aaffc3", "#808000", "#ffd8b1", "#000075", "#808080", "#ffffff", "#000000"];
         const pokeWindow = document.querySelector("#poke-window");
 
@@ -211,7 +213,7 @@
                 vec.push(val);
             }
             console.log(vec.length);
-            $.get("./sketchsearch", {vector: vec.join(",")}, function(data, status) {
+            $.get(`${API_URL}/sketchsearch`, {vector: vec.join(",")}, function(data, status) {
                 console.log(data);
                 image0.setAttribute("src", `${SERVER_URL}/images/regular/${data.url0}`);
                 image1.setAttribute("src", `${SERVER_URL}/images/regular/${data.url1}`);

@@ -6,11 +6,13 @@ import phylo as ph
 import scipy.spatial.distance as scidist
 
 from flask import Flask
-from flask import render_template
+# from flask import render_template
 from flask import jsonify
 from flask import request
 from flask import send_from_directory
+from flask_cors import CORS
 server = Flask(__name__)
+CORS(server)
 
 
 """Load Creatures"""
@@ -30,11 +32,6 @@ poke_df["x"] = binary_pokemon
 print("Ready to search!")
 
 """Serving HTML Pages/Templates"""
-
-
-@server.route("/")
-def home():
-    return render_template("index.html")
 
 
 @server.route("/bulma.min.css")

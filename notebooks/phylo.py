@@ -98,4 +98,4 @@ def vectorize_pokemon(path):
 
 def save_image(img, filepath):
     result = unvectorize(img)
-    result.save("output/"+filepath)
+    result.save("gs://phylo/output/"+filepath)

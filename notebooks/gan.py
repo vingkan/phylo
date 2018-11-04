@@ -169,7 +169,6 @@ class Manager(object):
             noise = np.asarray([ph.generate_random() for i in range(batch_size)])
             print("Generating fake images")
             fake_images = self.generator.predict(noise)
-            fake_images = np.asarray([[abs(xj * 4) for xj in xi] for xi in fake_images]).astype("uint8")
             X = np.concatenate((images_train, fake_images))
             Y = np.ones([2*batch_size, 1])
             Y[batch_size:, :] = 0
@@ -186,18 +185,18 @@ class Manager(object):
 
             if save_interval>0:
                 if (i+1)%save_interval==0:
-                    self.save_image()
+                    self.save_image(i)
 
-    def save_image(self, save2File=False, samples=16, fake=True):
+    def save_image(self, save2File=False, samples=16, fake=True, iter_):
         if fake:
             noise = np.asarray([ph.generate_random() for i in range(samples)])
-            images = np.asarray([[abs(xj * 4) for xj in xi] for xi in self.generator.predict(noise)]).astype("uint8")
+            images = self.generator.predict(noise)
+            images = np.asarray([[abs(xj * 4) % 5 for xj in xi] for xi in images]).astype(int)
             cnt = 0
-            import pdb; pdb.set_trace()
             for img in images:
-                ph.save_image(img, "fake_img_{}.png".format(cnt))
+                ph.save_image(img, "iteration_{}/fake_img_{}.png".format(iter_, cnt))
                 cnt += 1
 
 if __name__ == "__main__":
     manager = Manager()
-    manager.train(train_steps=1, batch_size=10, save_interval=1)
+    manager.train(train_steps=30000, batch_size=256, save_interval=500)

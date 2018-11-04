@@ -25,19 +25,13 @@ for (dirnames, dirpath, filenames) in os.walk(ph.REGULAR_POKEMON_PATH):
     paths.extend(filenames)
 
 np.random.seed(820)
-REGULAR_POKEMON = ph.vectorize_pokemon(ph.REGULAR_POKEMON_PATH)
-SHINY_POKEMON = ph.vectorize_pokemon(ph.SHINY_POKEMON_PATH)
+REGULAR_POKEMON = np.load("../notebooks/regular_pokemon.npy")
 
 binary_pokemon = [binarize(xv) for xv in REGULAR_POKEMON]
 poke_df = pd.DataFrame()
 poke_df["i"] = range(len(binary_pokemon))
 poke_df["x"] = binary_pokemon
-
-
-@server.route('/hello')
-def hello():
-    return 'Hello World!'
-
+print("Ready to search!")
 
 """Serving HTML Pages/Templates"""
 

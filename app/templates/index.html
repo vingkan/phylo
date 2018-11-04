@@ -10,8 +10,8 @@
         }
         
         #canvas {
-            width: 96px;
-            height: 96px;
+            width: 192px;
+            height: 192px;
             background: white;
             margin: 50px auto;
         }
@@ -24,7 +24,7 @@
     </style>
 </head>
 <body>
-    <canvas id="canvas" width="96" height="96"></canvas>
+    <canvas id="canvas" width="192" height="192"></canvas>
     <button id="button">Search</button>
     <button id="clear">Clear</button>
     <img id="image" src="" alt="Your creature will appear here.">
@@ -61,21 +61,26 @@
         button.addEventListener("click", (e) => {
             let im = ctx.getImageData(0, 0, canvas.width, canvas.height);
             const channels = 4;
-            const size = 96 * 96 * 4;
+            const size = 192 * 192 * 4;
             let vec = [];
-            for (let i = 0; i < size; i += channels) {
+            for (let i = 0; i < size; i += (2 * channels)) {
                 let val = 0;
                 if (im.data[i + 3] > 0) {
                     val = 4;
                 }
                 vec.push(val);
             }
-            console.log(vec);
-            $.get("./sketchsearch", {
-                vector: vec.join(",")
-            }, function(data) {
-                console.log(data);
-                image.setAttribute("src", `http://localhost:8888/files/images/regular/${data.url}`);
+            console.log(vec.length);
+            $.ajax({
+                url: "./sketchsearch",
+                data: {vector: vec.join(",")},
+                success: function(data, status) {
+                    console.log(data);
+                    image.setAttribute("src", `http://localhost:8888/files/images/regular/${data.url}`);
+                },
+                error: function(err) {
+                    image.setAttribute("src", `http://localhost:8888/files/images/regular/treecko.png`);
+                }
             });
         });
         clear.addEventListener("click", (e) => {

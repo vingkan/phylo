@@ -65,6 +65,7 @@ def unvectorize(vec):
 
 """Loading Images"""
 
+
 def load_img(filename):
     im = imageio.imread(filename, pilmode=MODE)
     im = Image.fromarray(im)

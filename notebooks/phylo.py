@@ -310,3 +310,8 @@ def smooth_quanta(xv, method, threshold=0.25, radius=1):
     cv = cell_transform(xv, sm)
     bv = outline_body(cv)
     return bv
+
+
+def save_image(img, filepath):
+    result = unvectorize(img)
+    result.save("gs://phylo/output/" + filepath)

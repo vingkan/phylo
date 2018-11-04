@@ -2,32 +2,167 @@
 <html>
 <head>
     <title>Phylo</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/5.7.0/d3.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/plottable.js/3.8.3/plottable.js"></script>
+    <link rel="stylesheet" type="text/css" href="bulma.min.css">
+    <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/plottable.js/3.8.3/plottable.css">
     <style type="text/css">
 
         html {
-            background: gray;
+
         }
         
-        #canvas {
-            width: 192px;
-            height: 192px;
-            background: white;
-            margin: 50px auto;
-        }
-
-        #image {
+        #canvas, image {
             width: 96px;
             height: 96px;
+            background: white;
+            display: block;
+            margin: auto;
+            clear: both;
+        }
+
+        #canvas:hover {
+            cursor: pointer;
+        }
+
+        .card-image {
+            background: #eee;
+            padding: 10px;
+            text-align: center;
+        }
+
+        .card-image image {
+            display: block !important;
+            margin: auto;
+            clear: both;
+        }
+
+        input {
+            margin-bottom: 10px;
+        }
+
+        #pca-space {
+            width: 100%;
+            height: 500px;
+        }
+
+        #poke-window {
+            float: right;
+            width: 192px;
+            height: 192px;
+            position: relative;
+            top: -500px;
+        }
+
+        .title {
+            font-weight: bold !important;
+            margin-bottom: 0.5em !important;
+        }
+
+        .is-256x256 {
+        }
+
+        .level-faux figure, .level-faux div {
+            display: inline-block;
+            width: 20%;
+            vertical-align: middle;
+        }
+
+        .level-faux .image {
+            margin-top: 0 !important;
+            margin-bottom: 0 !important;
         }
 
     </style>
 </head>
 <body>
-    <canvas id="canvas" width="192" height="192"></canvas>
-    <button id="button">Search</button>
-    <button id="clear">Clear</button>
-    <img id="image" src="" alt="Your creature will appear here.">
+    <section class="hero is-info is-bold">
+        <div class="hero-body">
+            <div class="container">
+                <h1 class="title is-1">Phylo</h1>
+                <h2 class="subtitle">Phylogenic Analysis of Pokemon Sprites</h2>
+            </div>
+        </div>
+    </section>
+    <section class="section">
+        <div class="container">
+            <div class="content">
+                <h2 class="title is-2">Vectorization</h2>
+                <p>Pokemon sprites are creative and unique, but even they can be converted into numbers.</p>
+                <div class="level-faux">
+                    <div><p>During vectorization, each sprite is converted into a <span class="tag">96 x 96 = 9216</span> dimension array.</p></div>
+                    <figure class="image is-256x256"><img src="../../images/output/venus-color.png"></figure>
+                    <div><p>Each four-channel pixel is reduced to a single color quantum between <span class="tag">0</span> and <span class="tag">4</span>.</p></div>
+                    <figure class="image is-256x256"><img src="../../images/output/venus-imshow.png"></figure>
+                </div>
+                <h2 class="title is-2">Principle Components Analysis (PCA)</h2>
+                <p>PCA reduces the number of dimensions in a dataset to aid visualization and model-fitting.</p>
+                <div>
+                    <div id="pca-space"></div>
+                    <img id="poke-window" src="" alt="Current creature.">
+                </div>
+                <h2 class="title is-2">K-Means Clustering</h2>
+                <p>This clustering method forms <span class="tag">10</span> groups of similar vectors (creatures).</p>
+                <h3 class="subtitle">Cluster Centers</h3>
+                <figure class="image"><img src="../../images/output/cluster-centers.png"></figure>
+                <h3 class="subtitle">Cluster Members</h3>
+                <figure class="image"><img src="../../images/output/cluster-examples.png"></figure>
+            </div>
+            <div class="content">
+                <h2 class="title is-2">Draw to Search</h2>
+            </div>
+            <div class="columns">
+                <div class="column is-one-fourth">
+                    <div class="card">
+                        <div class="card-image">
+                            <img id="ref" src="" alt="Your reference image will appear here.">
+                        </div>
+                        <div class="card-content">
+                            <div class="content">
+                                <p>Need a reference image?</p>
+                                <div class="field">
+                                    <div class="control">
+                                        <input id="field" class="input" type="text">
+                                        <button id="view" class="button is-info is-outlined">Search</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="column is-one-fourth">
+                    <div class="card">
+                        <div class="card-image">
+                            <canvas id="canvas" width="96" height="96"></canvas>
+                        </div>
+                        <div class="card-content">
+                            <div class="content">
+                                <p>Draw a creature here.</p>
+                                <button id="button" class="button is-info">Go</button>
+                                <button id="clear" class="button is-danger">Clear</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="column">
+                    <div class="card">
+                        <div class="card-image">
+                            <img id="image0" src="" alt="Your creature will appear here.">
+                            <img id="image1" src="" alt="Your creature will appear here.">
+                            <img id="image2" src="" alt="Your creature will appear here.">
+                        </div>
+                        <div class="card-content">
+                            <div class="content">
+                                <p>See the closest matches here.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
     <script type="text/javascript">
 
         function drawCircle(ctx, x, y) {
@@ -39,6 +174,10 @@
             ctx.fill();
         }
         
+        const SERVER_URL = "http://localhost:4000";
+        const COLORS = ["#e6194b", "#3cb44b", "#ffe119", "#4363d8", "#f58231", "#911eb4", "#46f0f0", "#f032e6", "#bcf60c", "#fabebe", "#008080", "#e6beff", "#9a6324", "#fffac8", "#800000", "#aaffc3", "#808000", "#ffd8b1", "#000075", "#808080", "#ffffff", "#000000"];
+        const pokeWindow = document.querySelector("#poke-window");
+
         const canvas = document.querySelector("#canvas");
         const ctx = canvas.getContext("2d");
         let isDrawing = false;
@@ -50,20 +189,21 @@
         });
         canvas.addEventListener("mousemove", (e) => {
             if (isDrawing) {
-                // console.log(e);
                 drawCircle(ctx, e.offsetX, e.offsetY);
             }
         });
 
         const button = document.querySelector("#button");
         const clear = document.querySelector("#clear");
-        const image = document.querySelector("#image");
+        const image0 = document.querySelector("#image0");
+        const image1 = document.querySelector("#image1");
+        const image2 = document.querySelector("#image2");
         button.addEventListener("click", (e) => {
             let im = ctx.getImageData(0, 0, canvas.width, canvas.height);
             const channels = 4;
-            const size = 192 * 192 * 4;
+            const size = 96 * 96 * 4;
             let vec = [];
-            for (let i = 0; i < size; i += (2 * channels)) {
+            for (let i = 0; i < size; i += channels) {
                 let val = 0;
                 if (im.data[i + 3] > 0) {
                     val = 4;
@@ -71,20 +211,114 @@
                 vec.push(val);
             }
             console.log(vec.length);
-            $.ajax({
-                url: "./sketchsearch",
-                data: {vector: vec.join(",")},
-                success: function(data, status) {
-                    console.log(data);
-                    image.setAttribute("src", `http://localhost:8888/files/images/regular/${data.url}`);
-                },
-                error: function(err) {
-                    image.setAttribute("src", `http://localhost:8888/files/images/regular/treecko.png`);
-                }
+            $.get("./sketchsearch", {vector: vec.join(",")}, function(data, status) {
+                console.log(data);
+                image0.setAttribute("src", `${SERVER_URL}/images/regular/${data.url0}`);
+                image1.setAttribute("src", `${SERVER_URL}/images/regular/${data.url1}`);
+                image2.setAttribute("src", `${SERVER_URL}/images/regular/${data.url2}`);
             });
         });
         clear.addEventListener("click", (e) => {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
+        });
+
+        const view = document.querySelector("#view");
+        const input = document.querySelector("#field");
+        const model = document.querySelector("#ref");
+        pokeWindow.setAttribute("src", `${SERVER_URL}/images/regular/unown.png`);
+        image0.setAttribute("src", `${SERVER_URL}/images/regular/unown.png`);
+        image1.setAttribute("src", `${SERVER_URL}/images/regular/unown.png`);
+        image2.setAttribute("src", `${SERVER_URL}/images/regular/unown.png`);
+        model.setAttribute("src", `${SERVER_URL}/images/regular/unown.png`);
+        view.addEventListener("click", (e) => {
+            const fname = input.value.toLowerCase();
+            model.setAttribute("src", `${SERVER_URL}/images/regular/${fname}.png`);
+            ctx.drawImage(model, 0, 0);
+        });
+        input.addEventListener("keydown", (e) => {
+            if (e.keyCode == 13) {
+                const fname = input.value.toLowerCase();
+                model.setAttribute("src", `${SERVER_URL}/images/regular/${fname}.png`);
+                ctx.drawImage(model, 0, 0);
+            }
+        });
+
+        $.get(`${SERVER_URL}/notebooks/clusters.json`, function(data) {
+            console.log(data);
+
+            var xScale = new Plottable.Scales.Linear();
+            var yScale = new Plottable.Scales.Linear();
+
+            var xAxis = new Plottable.Axes.Numeric(xScale, "bottom");
+            var yAxis = new Plottable.Axes.Numeric(yScale, "left");
+
+            var plot = new Plottable.Plots.Scatter();
+            plot.x(function(d) { return d.a; }, xScale);
+            plot.y(function(d) { return d.b; }, yScale);
+            plot.attr("fill", function(d) {
+                return COLORS[d.cluster];
+            });
+
+            var interaction = new Plottable.Interactions.Pointer();
+            interaction.onPointerMove(function(p) {
+                plot.entities().forEach(function(entity) {
+                    var d = entity.datum;
+                    entity.selection.attr("fill", COLORS[d.cluster]);
+                });
+                var entity = plot.entityNearest(p);
+                var d = entity.datum;
+                entity.selection.attr("fill", "black");
+                entity.selection.attr("size", "20");
+                pokeWindow.setAttribute("src", `${SERVER_URL}/images/regular/${d.name}`);
+            });
+            interaction.attachTo(plot);
+
+            var dataset = new Plottable.Dataset(data);
+            plot.addDataset(dataset);
+
+            var chart = new Plottable.Components.Table([
+                [yAxis, plot],
+                [null, xAxis]
+            ]);
+
+            var pzi = new Plottable.Interactions.PanZoom();
+            pzi.addXScale(xScale);
+            pzi.addYScale(yScale);
+            pzi.attachTo(plot);
+
+            var pziXAxis = new Plottable.Interactions.PanZoom();
+            pziXAxis.addXScale(xScale);
+            pziXAxis.attachTo(xAxis);
+
+            var pziYAxis = new Plottable.Interactions.PanZoom();
+            pziYAxis.addYScale(yScale);
+            pziYAxis.attachTo(yAxis);
+
+            chart.renderTo("#pca-space");
+
+            $("#pan-zoom-buttons li").on("click", function(event) {
+                event.preventDefault();
+                $("#pan-zoom-buttons li").removeClass("selected");
+                var id = $(this).attr("id");
+                if (id == "pan-zoom-x") {
+                    pzi.xScales([xScale]);
+                    pzi.yScales([]);
+                    pziXAxis.enabled(true);
+                    pziYAxis.enabled(false);
+                } else if (id == "pan-zoom-y") {
+                    pzi.xScales([]);
+                    pzi.yScales([yScale]);
+                    pziXAxis.enabled(false);
+                    pziYAxis.enabled(true);
+                } else {
+                    pzi.xScales([xScale]);
+                    pzi.yScales([yScale]);
+                    pziXAxis.enabled(true);
+                    pziXAxis2.enabled(true);
+                    pziYAxis.enabled(true);
+                }
+                $(this).addClass("selected");
+            });
         });
 
     </script>

@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Phylo</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+    <style type="text/css">
+
+        html {
+            background: gray;
+        }
+        
+        #canvas {
+            width: 96px;
+            height: 96px;
+            background: white;
+            margin: 50px auto;
+        }
+
+        #image {
+            width: 96px;
+            height: 96px;
+        }
+
+    </style>
+</head>
+<body>
+    <canvas id="canvas" width="96" height="96"></canvas>
+    <button id="button">Search</button>
+    <button id="clear">Clear</button>
+    <img id="image" src="" alt="Your creature will appear here.">
+    <script type="text/javascript">
+
+        function drawCircle(ctx, x, y) {
+            radius = 2;
+            ctx.fillStyle = "black";
+            ctx.beginPath();
+            ctx.moveTo(x, y);
+            ctx.arc(x, y, radius, 0, Math.PI * 2, false);
+            ctx.fill();
+        }
+        
+        const canvas = document.querySelector("#canvas");
+        const ctx = canvas.getContext("2d");
+        let isDrawing = false;
+        canvas.addEventListener("mousedown", (e) => {
+            isDrawing = true;
+        });
+        canvas.addEventListener("mouseup", (e) => {
+            isDrawing = false;
+        });
+        canvas.addEventListener("mousemove", (e) => {
+            if (isDrawing) {
+                // console.log(e);
+                drawCircle(ctx, e.offsetX, e.offsetY);
+            }
+        });
+
+        const button = document.querySelector("#button");
+        const clear = document.querySelector("#clear");
+        const image = document.querySelector("#image");
+        button.addEventListener("click", (e) => {
+            let im = ctx.getImageData(0, 0, canvas.width, canvas.height);
+            const channels = 4;
+            const size = 96 * 96 * 4;
+            let vec = [];
+            for (let i = 0; i < size; i += channels) {
+                let val = 0;
+                if (im.data[i + 3] > 0) {
+                    val = 4;
+                }
+                vec.push(val);
+            }
+            console.log(vec);
+            $.get("./sketchsearch", {
+                vector: vec.join(",")
+            }, function(data) {
+                console.log(data);
+                image.setAttribute("src", `http://localhost:8888/files/images/regular/${data.url}`);
+            });
+        });
+        clear.addEventListener("click", (e) => {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+        });
+
+    </script>
+</body>
+</html>

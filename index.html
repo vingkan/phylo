@@ -64,15 +64,35 @@
         .is-256x256 {
         }
 
-        .level-faux figure, .level-faux div {
+        .level-faux, .level-fake, .level-faux-half {
+            margin-top: 3em;
+            margin-bottom: 3em;
+        }
+
+        .level-faux figure, .level-faux div, .level-faux-half figure, .level-faux-half div {
             display: inline-block;
-            width: 20%;
             vertical-align: middle;
+        }
+
+        .level-faux figure, .level-faux div {
+            width: 20%;
+        }
+
+        .level-faux-half figure, .level-faux-half div {
+            width: 40%;
         }
 
         .level-faux .image {
             margin-top: 0 !important;
             margin-bottom: 0 !important;
+        }
+
+        .level-fake .image {
+            display: inline-block;
+        }
+
+        .level-fake {
+            text-align: center;
         }
 
     </style>
@@ -109,8 +129,57 @@
                 <figure class="image"><img src="./images/output/cluster-centers.png"></figure>
                 <h3 class="subtitle">Cluster Members</h3>
                 <figure class="image"><img src="./images/output/cluster-examples.png"></figure>
-            </div>
-            <div class="content">
+                <h2 class="title is-2">Candidate Creatures</h2>
+                <p>Every sprite is a vector... Can we generate vectors that are creature-like?</p>
+                <div class="level-faux">
+                    <div><p>Randomly-generating color values just produces noisy vectors.</p></div>
+                    <figure class="image is-256x256"><img src="./images/output/random-vector.png"></figure>
+                    <div><p>Computing the <strong>expectation</strong> of each color values from a subsample offers better shapes.</p></div>
+                    <figure class="image is-256x256"><img src="./images/output/expected-vector.png"></figure>
+                </div>
+                <h2 class="title is-2">Logistic Regression</h2>
+                <p>Humans cannot look at every single vector. Classification can help predict which vectors might be worth a closer look.</p>
+                <div class="level-faux">
+                    <div><p><strong>Active proportion</strong> measures the proportion of cells that are not transparent.</p></div>
+                    <figure class="image is-256x256"><img src="./images/output/active-proportion.png"></figure>
+                    <div><p>The distribution of color quantum <span class="tag">3</span> contributed the most weight to the classifier.</p></div>
+                    <figure class="image is-256x256"><img src="./images/output/q3-hist.png"></figure>
+                </div>
+                <p>The classifier achieved 82% accuracy on both the training and test datasets, with no false positives. All misclassifcations represented known creatures labeled as noise.</p>
+                <div class="level-faux">
+                    <pre>Mean Train Accuracy = 0.826
+Mean Test Accuracy = 0.820
+w = array([-5.37720197,  2.15129582, -2.7828926 , 12.3475064 , -1.90558047])</pre>
+                </div>
+                <p>With no false positives, the classifier likely suffers from <strong>overfitting</strong>. Below are some of the true negative cases that fell close to the prediction boundary.</p>
+                <div class="level-fake">
+                    <figure class="image is-128x128"><img src="./images/output/tn1.png"></figure>
+                    <figure class="image is-128x128"><img src="./images/output/tn2.png"></figure>
+                    <figure class="image is-128x128"><img src="./images/output/tn3.png"></figure>
+                    <figure class="image is-128x128"><img src="./images/output/tn4.png"></figure>
+                </div>
+                <h2 class="title is-2">Genetic Algorithms</h2>
+                <p>To find new candidate creatures, select an initial population, score each candidate based on its <strong>fitness</strong>, create <strong>offspring</strong> through crossovers, and add random <strong>mutations</strong> to avoid converging too early.</p>
+                <p>The progression below shows each generation of offspring as a column:</p>
+                <figure class="image"><img src="./images/output/ga1.png"></figure>
+                <p>The crossovers and mutations eroded the sprite details, so <strong>kernel smoothing</strong> and other image processing techniques helped reduce grainy areas. This grid illustrates a spectrum of shading vectors and thresholds, resulting in different kinds of sprites:</p>
+                <figure class="image"><img src="./images/output/dilation2.png"></figure>
+                <h2 class="title is-2">Linear Optimization</h2>
+                <p>Clustering in small bounded areas offered a way to look for new sprites in gaps between known creatures. Linear optimization searches for vectors that minimize a cost function while satisfying the boundary constraints.</p>
+                <div class="level-faux-half">
+                    <div><p>We built an interactive tool in a Jupyter notebook to traverse vectors in the PCA space. Users control two dimensions, but get 9216-dimension results.</p></div>
+                    <figure class="image"><img src="./images/output/pca-explorer.png"></figure>
+                </div>
+                <h2 class="title is-2">Generative Adversarial Neural Networks</h2>
+                <p>This method takes the longest time to train and the most resources to run. But we hope it will provide the most compelling new creature sprites in the future.</p>
+                <h2 class="title is-2">New Creature Sprites</h2>
+                <p>They're a little rough around the edges, but here are some of the interesting candidate sprites we found:</p>
+                <div class="level-fake">
+                    <figure class="image is-128x128"><img src="./images/output/chareye.png"></figure>
+                    <figure class="image is-128x128"><img src="./images/output/mawcroc.png"></figure>
+                    <figure class="image is-128x128"><img src="./images/output/fishyrat.png"></figure>
+                    <figure class="image is-128x128"><img src="./images/output/archie.png"></figure>
+                </div>
                 <h2 class="title is-2">Draw to Search</h2>
                 <p>Computes the Hamming Distance between your sketch and all creature vectors to find the closest match.</p>
             </div>
@@ -212,9 +281,7 @@
                 }
                 vec.push(val);
             }
-            console.log(vec.length);
             $.get(`${API_URL}/sketchsearch`, {vector: vec.join(",")}, function(data, status) {
-                console.log(data);
                 image0.setAttribute("src", `${SERVER_URL}/images/regular/${data.url0}`);
                 image1.setAttribute("src", `${SERVER_URL}/images/regular/${data.url1}`);
                 image2.setAttribute("src", `${SERVER_URL}/images/regular/${data.url2}`);
@@ -246,7 +313,6 @@
         });
 
         $.get(`${SERVER_URL}/notebooks/clusters.json`, function(data) {
-            console.log(data);
 
             var xScale = new Plottable.Scales.Linear();
             var yScale = new Plottable.Scales.Linear();

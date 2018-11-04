@@ -95,3 +95,7 @@ def vectorize_pokemon(path):
 
     print("Done vectorizing")
     return np.asarray(pokemon)
+
+def save_image(img, filepath):
+    result = unvectorize(img)
+    result.save("output/"+filepath)

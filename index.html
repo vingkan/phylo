@@ -245,7 +245,7 @@ w = array([-5.37720197,  2.15129582, -2.7828926 , 12.3475064 , -1.90558047])</pr
         }
         
         const SERVER_URL = ".";
-        const API_URL = "http://localhost:5000"
+        const API_URL = "https://UselessConcreteInversion.vingkan.repl.co"
         const COLORS = ["#e6194b", "#3cb44b", "#ffe119", "#4363d8", "#f58231", "#911eb4", "#46f0f0", "#f032e6", "#bcf60c", "#fabebe", "#008080", "#e6beff", "#9a6324", "#fffac8", "#800000", "#aaffc3", "#808000", "#ffd8b1", "#000075", "#808080", "#ffffff", "#000000"];
         const pokeWindow = document.querySelector("#poke-window");
 
@@ -282,6 +282,7 @@ w = array([-5.37720197,  2.15129582, -2.7828926 , 12.3475064 , -1.90558047])</pr
                 vec.push(val);
             }
             $.get(`${API_URL}/sketchsearch`, {vector: vec.join(",")}, function(data, status) {
+                console.log(data);
                 image0.setAttribute("src", `${SERVER_URL}/images/regular/${data.url0}`);
                 image1.setAttribute("src", `${SERVER_URL}/images/regular/${data.url1}`);
                 image2.setAttribute("src", `${SERVER_URL}/images/regular/${data.url2}`);
